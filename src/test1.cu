@@ -34,7 +34,7 @@ int main(void)
     // (Skipping error checks to make code more readable)
     clock_t start, end;
     unsigned long micros = 0;
-    int dataLength = 10024;
+    int dataLength = 1024;
     int filteredDataLength = 1024;
     int numeratorLength= 1024;
 

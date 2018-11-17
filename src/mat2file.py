@@ -5,13 +5,14 @@ import argparse
 def mat2file(filearray, dest):
   mfile = []
   for i in range(0, len(filearray)):
-    key = filearray[i][-5]
+    key=filearray[i][-5]
     mat = np.ndarray.tolist(sio.loadmat(filearray[i])[key])[0]
     mfile.append(mat)
 
   with open(dest, "w+") as f:
     for j in range(0, len(mfile)):
-      f.write(str(mfile[j][1:-2]))
+      for i in range(0, len(mfile[j])):
+	f.write(str(mfile[j][i])+" ")
       f.write("\n")
   f.close()
 

@@ -4,9 +4,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <chrono> 
+#include "read.h"
 
 using namespace std;
 using namespace std::chrono; 
+
+#define Lh 65 //filter length
+#define Lx 1201 //input signal length
 
 __global__ void filterData(const float *d_data,
                            const float *d_numerator, 
@@ -14,30 +18,32 @@ __global__ void filterData(const float *d_data,
                            const int numeratorLength,
                            const int filteredDataLength)
 {
-    int i = blockDim.x * blockIdx.x + threadIdx.x;
-
-    if (i < filteredDataLength)
-    {   float sum = 0.0f;
+   int i = blockDim.x * blockIdx.x + threadIdx.x;
+   if (i<filteredDataLength)
+    {   //float sum = 0.0f;
         for (int j = 0; j < numeratorLength; j++)
-        {
+        {   int l = i-j;
+	    if (l<0){l+=filteredDataLength;}
             // The first (numeratorLength-1) elements contain the filter state
-            sum += d_numerator[j] * d_data[i + numeratorLength - j - 1];
+            d_filteredData[i] += d_numerator[l] * d_data[j];
         }
-        d_filteredData[i] = sum;
+        //d_filteredData[i] = sum;
     }
 
     //d_filteredData[i] = sum;
 }
 
 int main(void)
-{
+{   float z[10000], b[10000]; 
+    read(z, b);
+   
     // (Skipping error checks to make code more readable)
     clock_t start, end;
     unsigned long micros = 0;
-    int dataLength = 1024;
-    int filteredDataLength = 1024;
-    int numeratorLength= 1024;
-
+    int dataLength = Lx;
+    int filteredDataLength = Lx;
+    int numeratorLength= Lh;
+    
     // Pointers to data, filtered data and filter coefficients
     // (Skipping how these are read into the arrays)
     float *h_data = new float[dataLength];
@@ -45,10 +51,10 @@ int main(void)
     float *h_filter = new float[numeratorLength];
       
     for (int i=0;i<dataLength;i++){
-    h_data[i] = (float)rand()/(float)(RAND_MAX/2);
+    h_data[i] = z[i];if(z[i]!=0.00f){printf("%d\n",i);}
     }
-    for (int j=0;j<numeratorLength;j++){ 
-    h_filter[j] = (float)rand()/(float)(RAND_MAX/0.5);
+    for (int j=0;j<numeratorLength;j++){
+    h_filter[j] = b[j];
     }
     
     // Create device pointers
@@ -77,8 +83,8 @@ int main(void)
 
     // Copy results to host
     cudaMemcpy(h_filteredData, d_filteredData, filteredDataLength * sizeof(float), cudaMemcpyDeviceToHost);
-    //for (int i=0;i<filteredDataLength;i++){
-	//printf("%lf\n",h_filteredData[i]);}
+    for (int i=0;i<filteredDataLength;i++){
+	printf("%lf\n",h_filteredData[i]);}
     // Clean up
     cudaFree(d_data);
     cudaFree(d_numerator);

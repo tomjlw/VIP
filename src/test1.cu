@@ -1,4 +1,5 @@
 #include <cuda.h>
+#include <stddef.h>
 #include <cstddef>
 #include <iostream>
 #include <stdlib.h>
@@ -19,19 +20,19 @@ __global__ void filterData(const float *d_data,
                            const int filteredDataLength)
 {
    int i = blockDim.x * blockIdx.x + threadIdx.x;
-   if (i<filteredDataLength)
-    {   //float sum = 0.0f;
+   float sum = 0;
+
+    if (i < filteredDataLength)
+    {
         for (int j = 0; j < numeratorLength; j++)
-        {   int l = i-j;
-	    if (l<0){l+=filteredDataLength;}
-            // The first (numeratorLength-1) elements contain the filter state
-            d_filteredData[i] += d_numerator[l] * d_data[j];
+        {
+            sum += d_numerator[j] * d_data[i + numeratorLength - j - 1];
         }
-        //d_filteredData[i] = sum;
     }
 
-    //d_filteredData[i] = sum;
+    d_filteredData[i] = sum;
 }
+
 
 int main(void)
 {   float z[10000], b[10000]; 
@@ -51,12 +52,12 @@ int main(void)
     float *h_filter = new float[numeratorLength];
       
     for (int i=0;i<dataLength;i++){
-    h_data[i] = z[i];if(z[i]!=0.00f){printf("%d\n",i);}
+    h_data[i] = z[i];
     }
     for (int j=0;j<numeratorLength;j++){
     h_filter[j] = b[j];
     }
-    
+
     // Create device pointers
     float *d_data = nullptr;
     cudaMalloc((void **)&d_data, dataLength * sizeof(float));
@@ -79,12 +80,12 @@ int main(void)
     filterData<<<blocksPerGrid,threadsPerBlock>>>(d_data, d_numerator, d_filteredData, numeratorLength, filteredDataLength);
     end = clock();
     micros = end - start;
-    cout<<micros;
+    //cout<<micros;
 
     // Copy results to host
-    cudaMemcpy(h_filteredData, d_filteredData, filteredDataLength * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_filteredData, d_filteredData, filteredDataLength * sizeof(float),  cudaMemcpyDeviceToHost);
     for (int i=0;i<filteredDataLength;i++){
-	printf("%lf\n",h_filteredData[i]);}
+    printf("%lf\n",h_filteredData[i]);}
     // Clean up
     cudaFree(d_data);
     cudaFree(d_numerator);

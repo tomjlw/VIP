@@ -11,4 +11,4 @@ calculation by simply using CPU. Then I used cuda and record the run-time
 of GPU, so that I can compare runtime of both. 
 
 # Result
-For raw data with length 1201, GPU takes 11.6 microseconds to execute the kernel while matlab needs 197 mcroseconds.
+For raw data with length 1201, GPU takes 11.6 microseconds to execute the kernel while matlab needs 197 microseconds.

@@ -11,9 +11,4 @@ calculation by simply using CPU. Then I used cuda and record the run-time
 of GPU, so that I can compare runtime of both. 
 
 # Result
-For a small raw data, with length smaller than 10000, Matlab and GPU actually
-makes no much difference. However, if the data length is bigger than 10000,
-CPU will run much fastr than Matlab. One thing to notice is that, here I just
-measure the time of running calculation with GPU, thw whole process cost
-more time actually and most of it comes from the process of copying data from
-and to between GPU and CPU.  
+For raw data with length 1201, GPU takes 11.6 microseconds to execute the kernel while matlab needs 197 mcroseconds.

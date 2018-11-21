@@ -22,9 +22,8 @@ __global__ void filterData(const float *d_data,
    int i = blockDim.x * blockIdx.x + threadIdx.x;
    int tid = threadIdx.x;
    float sum = 0;
-   __shared__ float tmp[1201];
-   if (threadIdx.x<1201){ 
-   tmp[tid] = d_filteredData[tid];}
+   __shared__ float tmp[1300];
+   tmp[tid] = d_filteredData[tid];
 
     if (i < filteredDataLength)
     {
@@ -35,10 +34,10 @@ __global__ void filterData(const float *d_data,
     }
 
     d_filteredData[i] = sum;
-     __syncthreads();
-    d_filteredData=tmp;
+    __syncthreads();
+    d_filteredData[tid]=tmp[tid];
 }
-    
+
 
 int main(void)
 {   float z[10000], b[10000]; 
